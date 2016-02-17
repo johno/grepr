@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+include_db_dir = false
+include_log_dir = false
+
+OptionParser.new do |opts|
+  opts.banner = "  Usage: \n    $ grepr full_name --log\n\n  Options: \n\n"
+
+  opts.on('-l', '--log', 'include log directory') do |l|
+    include_log_dir = true
+  end
+
+  opts.on('-d', '--db', 'include db directory') do |d|
+    include_db_dir = true
+  end
+end.parse!
+
+unless ARGV.length > 0
+  abort('Please provide a search pattern')
+end
+
+dirs_to_exclude = ['.git', 'node_modules', 'bower_components', 'log', '.svn', 'db']
+
+dirs_to_exclude.delete('log') if include_log_dir
+dirs_to_include.delete('db') if include_db_dir
+
+command = 'grep -r -i -I --color' 
+
+dirs_to_exclude.each do |dir|
+  command << " --exclude-dir=#{dir}"
+end
+
+ARGV << '.' if ARGV.length == 1
+
+command << " #{ARGV.join(' ')}"
+puts command
+exec command
